@@ -1,11 +1,12 @@
 import { fetchAllProducts } from "@/actions";
-import ProductCard from "./components/product-card";
+import ProductCard from "@/components/product-card";
+
 
 export default async function Home() {
 
   const getAllProducts = await fetchAllProducts();
 
-  console.log(getAllProducts);
+  // console.log(getAllProducts);
 
   return (
     <div>

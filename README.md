@@ -92,3 +92,103 @@ export { GET, POST } from '@/auth'
 ```jsx
 export { auth as middleware } from '@/auth'
 ```
+
+### Set-up redux
+- B1: Tạo folder store (trong folder src)
+- B2: Tạo folder slices chứa các slice (trong folder store)
+- B3: Tạo file cart-slice.js
+
+```jsx
+import { createSlice } from "@reduxjs/toolkit"
+
+const initialState = {
+    cartItems: []
+}
+
+const cartSlice = createSlice({
+    name: 'cart',
+    initialState,
+    reducers: {
+        addToCart(state, action) {
+
+        },
+        removeFromCart(state, action) {
+
+        }
+    }
+})
+
+export const { addToCart, removeFromCart } = cartSlice.actions;
+
+export default cartSlice.reducer;
+```
+
+- B4: Tạo file index.js trong folder store (để kết hợp nhiều reducers trong một)
+
+```jsx
+import { configureStore } from "@reduxjs/toolkit";
+import cartReducer from '@/store/slices/cart-slice'
+
+const store = configureStore({
+    reducer: {
+        cart: cartReducer
+    }
+});
+
+export default store;
+```
+
+- B5: Tạo folder provider (bên trong folder src) và bên trong nó là file index.js
+
+```jsx
+"use client"
+
+import { Provider } from 'react-redux'
+import store from '@/store'
+
+export default function ReduxProvider({ children }) {
+    return <Provider store={store}>{children}</Provider>
+}
+```
+
+- B6: Tạo 1 folder là common-layout bên trong folder components (folder components nằm trong folder src)
+
+```jsx
+const { default: ReduxProvider } = require("@/provider");
+
+async function CommonLayout({ children }) {
+    return <ReduxProvider>{children}</ReduxProvider>
+}
+
+export default CommonLayout;
+```
+
+- B7: Vào file layout.js (bên trong folder app)
+
+- Ban đầu
+
+```jsx
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
+    </html>
+  );
+}
+```
+
+- Sau khi Layout chứa redux store
+
+```jsx
+import CommonLayout from "@/components/common-layout";
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <CommonLayout>{children}</CommonLayout>
+      </body>
+    </html>
+  );
+}
+```

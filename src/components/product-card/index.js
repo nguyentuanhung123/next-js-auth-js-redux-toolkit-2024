@@ -6,8 +6,11 @@ import {
     CardContent,
     CardTitle,
   } from "@/components/ui/card"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
+
+/**
+ * Component này được sử dụng trong Home.jsx
+ */
 
 const ProductCard = ({item}) => {
 
