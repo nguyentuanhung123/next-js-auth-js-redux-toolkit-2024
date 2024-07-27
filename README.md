@@ -151,6 +151,9 @@ export default function ReduxProvider({ children }) {
 }
 ```
 
+- Đoạn mã này tạo ra một component ReduxProvider để bao bọc các component khác trong ứng dụng React, cho phép chúng truy cập vào Redux store thông qua context API của React. Đây là một cách để thiết lập Redux trong ứng dụng React để quản lý trạng thái toàn cục.
+
+
 - B6: Tạo 1 folder là common-layout bên trong folder components (folder components nằm trong folder src)
 
 ```jsx
@@ -192,3 +195,241 @@ export default function RootLayout({ children }) {
   );
 }
 ```
+
+### Tạo Header và cách đặt nó đúng vị trí
+
+- B1: Tạo folder header bên trong components
+
+```jsx
+'use client'
+
+import Link from 'next/link'
+import React from 'react'
+import { Button } from '../ui/button'
+
+const Header = () => {
+    return (
+        <header className='flex shadow-md py-4 px-4 bg-white min-h-[70px] tracking-wide relative z-50'>
+            <div className='flex flex-wrap items-center justify-between gap-5 w-full'>
+                <Link href={"/"}>Shopping Cart</Link>
+            </div>
+            <ul className='flex gap-6 items-center justify-center mr-10'>
+                <li className='text-lg font-semibold'>
+                    <Link href={'/'}>Products</Link>
+                </li>
+                <li className='text-lg font-semibold'>
+                    <Link href={'/cart'}>Cart</Link>
+                </li>
+            </ul>
+            <div className='flex space-x-3'>
+                <form>
+                    <Button>Login</Button>
+                </form>
+            </div>
+        </header>
+    )
+}
+
+export default Header
+```
+- B2: Di chuyển đến file index.js bên trong folder provider và sửa lại như bên dưới
+
+```jsx
+export default function ReduxProvider({ children }) {
+    return (
+        <Provider store={store}>
+            <Header />
+            {children}
+        </Provider>
+    )
+}
+```
+
+## Xem các reducers có trong store (Xem chi tiết bên trong add-to-cart trong folder component)
+
+```jsx
+const getState = useSelector(state => state);
+console.log("getState: ", getState); // { cart: { cartItems: Array(0) } }
+```
+
+## Lấy 1 reducers và state trong nó
+
+```jsx
+const { cart } = useSelector(state => state);
+console.log(cart?.cartItems); // []
+```
+
+### Giải thích về some
+
+```jsx
+cart?.cartItems.some((item) => item.id === productItem.id):
+```
+
+- some là một phương thức của mảng, nó sẽ kiểm tra xem có ít nhất một phần tử trong mảng thỏa mãn điều kiện được cung cấp hay không.
+- Ở đây, phương thức some được sử dụng để kiểm tra xem có bất kỳ mục nào trong cartItems có id trùng với productItem.id hay không.
+- Nếu tìm thấy một mục có id trùng khớp, some sẽ trả về true, ngược lại, nó sẽ trả về false.
+
+###  Thêm 1 sản phẩm và mảng
+
+- B1: Kiểm tra xem product đã có trong Cart hay chưa bằng hàm some
+
+```jsx
+const AddToCartButton = ({ productItem }) => {
+
+    const { cart } = useSelector(state => state);
+    console.log(cart?.cartItems);
+
+    return (
+        <div className="mt-8 max-w-md">
+            <Button>
+                {
+                    cart?.cartItems.some((item) => item.id === productItem.id) ? "Remove from cart" : "Add to cart"
+                }
+            </Button>
+        </div>
+    )
+}
+```
+
+- B2: Khởi tạo logic thực hiện thêm hay xóa
+
+```jsx
+const dispatch = useDispatch();
+
+const handleAddToCart = () => {
+    dispatch(addToCart(productItem))
+}
+
+const handleRemoveFromCart = () => {
+    dispatch(removeFromCart(productItem?.id))
+}
+
+<Button onClick={cart?.cartItems.some((item) => item.id === productItem.id) ? handleRemoveFromCart : handleAddToCart}>
+    {
+        cart?.cartItems.some((item) => item.id === productItem.id) ? "Remove from cart" : "Add to cart"
+    }
+</Button>
+```
+
+- B3: Sửa lại ở cart-slice.js
+
+```jsx
+const cartSlice = createSlice({
+    name: 'cart',
+    initialState,
+    reducers: {
+        addToCart(state, action) {
+            // console.log(state, action);
+            state.cartItems.push(action.payload)
+        },
+        removeFromCart(state, action) {
+            let cpyCartItems = [...state.cartItems];
+            cpyCartItems = cpyCartItems.filter((item) => item.id !== action.payload)
+            state.cartItems = cpyCartItems
+
+            return state;
+            // console.log(action.payload);
+        }
+    }
+})
+```
+
+### Giải thích về flex-shrink: 0
+
+- flex-shrink là một thuộc tính trong CSS thuộc module Flexbox, xác định khả năng thu nhỏ của một mục (flex item) bên trong một container flex. Khi sử dụng flex-shrink: 0, điều này có nghĩa là mục đó sẽ không bao giờ thu nhỏ kích thước của nó, ngay cả khi container flex không đủ chỗ để chứa tất cả các mục bên trong.
+- Giải thích chi tiết:
+- flex-shrink: 0:
+- Thuộc tính flex-shrink kiểm soát khả năng mục thu nhỏ kích thước của nó khi container flex nhỏ hơn tổng kích thước của tất cả các mục.
+- Giá trị 0 có nghĩa là mục sẽ không bao giờ thu nhỏ kích thước của nó, nó sẽ giữ nguyên kích thước ban đầu được xác định bởi thuộc tính width hoặc height (nếu có).
+- Ngược lại, nếu bạn đặt flex-shrink: 1 (giá trị mặc định), mục sẽ có thể thu nhỏ khi cần thiết để phù hợp với kích thước của container.
+
+# Ví dụ sử dụng:
+- Giả sử bạn có một container flex với ba mục bên trong:
+
+```jsx
+<div class="container">
+  <div class="item item-1">Item 1</div>
+  <div class="item item-2">Item 2</div>
+  <div class="item item-3">Item 3</div>
+</div>
+```
+
+- CSS
+
+```css
+.container {
+  display: flex;
+  width: 300px;
+}
+
+.item {
+  width: 150px;
+  border: 1px solid black;
+}
+
+.item-1 {
+  flex-shrink: 0; /* Item 1 sẽ không thu nhỏ */
+}
+```
+
+# Trong ví dụ này:
+
+- container có chiều rộng 300px.
+- Mỗi mục (item) có chiều rộng 150px.
+- item-1 có flex-shrink: 0, có nghĩa là nó sẽ không thu nhỏ.
+- Khi container không đủ chỗ (450px > 300px), item-2 và item-3 sẽ thu nhỏ để phù hợp với chiều rộng của container, nhưng item-1 sẽ giữ nguyên kích thước ban đầu của nó là 150px.
+
+# Tổng kết:
+- flex-shrink: 0 ngăn một mục flex thu nhỏ kích thước của nó.
+- Điều này hữu ích khi bạn muốn một mục giữ nguyên kích thước trong một container có thể thay đổi kích thước.
+- Các mục khác trong container flex sẽ thu nhỏ (hoặc mở rộng) để phù hợp với kích thước container.
+
+## Table trong project
+
+```jsx
+<div className='overflow-y-auto'>
+    <table className='mt-12 w-full border-collapse divide-y'>
+        <thead className='whitespace-nowrap text-left'>
+            <tr>
+                <th className='text-base text-gray-700 p-4'>Title</th>
+                <th>Price</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody className='whitespace-nowrap divide-y'>
+            {
+                cart?.cartItems.map((item) => (
+                    <tr key={item.id}>
+                        <td className='py-5 px-4'>
+                        <div className='flex items-center gap-6 w-max'>
+                            <div className='h-36 shrink-0'>
+                                <img 
+                                    src={item?.thumbnail}
+                                    alt={item?.title}
+                                    className='w-full h-full object-contain'
+                                />
+                            </div>
+                            <div>
+                                <p className='text-lg font-bold text-black'>
+                                    {item?.title}
+                                </p>
+                            </div>
+                            </div>
+                        </td>
+                        <td>
+                            <p>{item?.price}</p>
+                        </td>
+                        <td className='py-5 px-4'>
+                            <Button>Remove</Button>
+                        </td>
+                    </tr>
+                ))
+            }
+        </tbody>
+    </table>
+</div>
+```
+
+## Giải thích về object-contain
+- 'object-contain': Đảm bảo rằng hình ảnh sẽ được co giãn để vừa với phần tử chứa mà không làm biến dạng hình ảnh. Tỷ lệ của hình ảnh sẽ được giữ nguyên và các vùng không sử dụng sẽ được lấp đầy bởi khoảng trống (thường là màu nền của phần tử chứa).
+

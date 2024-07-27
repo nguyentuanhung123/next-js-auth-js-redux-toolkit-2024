@@ -21,7 +21,7 @@ const ProductDetails = async ({ params }) => {
                         <hr className="border-black border-2 my-6"/>
                         <div className="flex flex-wrap gap-5 justify-center mx-auto">
                             {
-                                getProductDetails?.images.map((imageItem) => (
+                                getProductDetails?.images?.map((imageItem) => (
                                     <img 
                                         key={imageItem} 
                                         src={imageItem} 
@@ -42,7 +42,7 @@ const ProductDetails = async ({ params }) => {
                         <h3 className="text-lg font-bold text-gray-700">
                             {getProductDetails?.description}
                         </h3>
-                        <AddToCartButton />
+                        <AddToCartButton productItem={getProductDetails}/>
                     </div>
                 </div>
             </div>
