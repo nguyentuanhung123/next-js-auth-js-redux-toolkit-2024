@@ -52,4 +52,43 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 - Chọn khuôn khổ bạn muốn bắt đầu hoặc xem triển khai ứng dụng hoặc kho lưu trữ mẫu bằng các nút bên dưới.
 
+### Setup Auth and Github : https://authjs.dev/guides/configuring-github
+
 ### Setup Github
+
+- B1: Vào github => Settings -> Developer settings
+- B2: Chọn OAuth Apps -> Nhấn button được hiện 
+- B3: Điền thông tin chi tiết
+- Application name: next-auth-redux-toolkit
+- Homepage URL: http://localhost:3000
+- Authorization callback URL: http://localhost:3000/api/auth/callback/github
+- B4: Nhấn Register application
+- B5: npx auth secret (tạo thành công file .env.local với AUTH_SECRET bên trong, nếu không có thì copy AUTH_SECRET bên dưới terminal và paste vapf file .env.local)
+- B6: Thêm 2 biến AUTH_GITHUB_ID và AUTH_GITHUB_SECRET bên dưới AUTH_SECRET
+- B7: Tạo file auth.js trong thư mục src
+
+```jsx
+import NextAuth from "next-auth";
+import Github from "next-auth/providers/github";
+
+export const {
+    handlers: { GET, POST },
+    auth,
+    signIn,
+    signOut
+} = NextAuth({
+    providers: [Github]
+});
+```
+
+- B8: Tạp folder [...nextauth] (bên trong chứa file route.js và folder nằm trong thư mục api)
+
+```jsx
+export { GET, POST } from '@/auth'
+```
+
+- B9: Tạo file middleware.js (bên trong folder src)
+
+```jsx
+export { auth as middleware } from '@/auth'
+```
