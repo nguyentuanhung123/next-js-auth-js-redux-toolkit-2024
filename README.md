@@ -433,3 +433,36 @@ const cartSlice = createSlice({
 ## Giải thích về object-contain
 - 'object-contain': Đảm bảo rằng hình ảnh sẽ được co giãn để vừa với phần tử chứa mà không làm biến dạng hình ảnh. Tỷ lệ của hình ảnh sẽ được giữ nguyên và các vùng không sử dụng sẽ được lấp đầy bởi khoảng trống (thường là màu nền của phần tử chứa).
 
+## Đăng nhập, đăng ký bằng github
+
+- B1: Vào file index.js trong actions
+
+```jsx
+import { signIn } from "@/auth";
+
+export async function loginAction() {
+    await signIn('github')
+}
+
+export async function logoutAction() {
+    await signOut();
+}
+```
+
+- B2: Vào folder header và bổ sung
+
+```jsx
+import { loginAction } from '@/actions'
+
+const handleAuthSignIn = async() => {
+    await loginAction()
+}
+
+<form action={handleAuthSignIn}>
+    <Button type="submit">Login</Button>
+</form>
+```
+
+-> Nếu nó đòi Authorize thì thành công
+
+# Vấn đề : Sau khi Authorize thành công thì hiện button Logout

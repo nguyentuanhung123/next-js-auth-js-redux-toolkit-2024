@@ -14,13 +14,13 @@ const Cart = () => {
 
     const dispatch = useDispatch()
 
-    useEffect(() => {
-        setTotalAmount(cart?.cartItems.reduce((acc, curr) => acc + curr?.price, 0));
-    }, [cart?.cartItems]);
-
     const handleRemoveFromCart = (getCurrentItemId) => {
         dispatch(removeFromCart(getCurrentItemId))
     }
+
+    useEffect(() => {
+        setTotalAmount(cart?.cartItems.reduce((acc, curr) => acc + curr?.price, 0));
+    }, [cart?.cartItems]);
 
     if(!cart?.cartItems.length) return <h1 className='text-4xl font-bold p-10'>Cart is empty.</h1>
 
