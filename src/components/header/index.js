@@ -3,12 +3,18 @@
 import Link from 'next/link'
 import React from 'react'
 import { Button } from '../ui/button'
-import { loginAction } from '@/actions'
+import { loginAction, logoutAction } from '@/actions'
 
-const Header = () => {
+const Header = ({getSession}) => {
 
-    const handleAuthSignIn = async() => {
+    console.log("setSession in header: ", getSession);
+
+    const handleOauthSignIn = async () => {
         await loginAction()
+    }
+
+    const handleOauthSignOut = async () => {
+        await logoutAction()
     }
 
     return (
@@ -25,8 +31,12 @@ const Header = () => {
                 </li>
             </ul>
             <div className='flex space-x-3'>
-                <form action={handleAuthSignIn}>
-                    <Button type="submit">Login</Button>
+                <form action={getSession?.user ? handleOauthSignOut : handleOauthSignIn}>
+                    <Button type="submit">
+                        {
+                            getSession?.user ? "Logout" : "Login"
+                        }
+                    </Button>
                 </form>
             </div>
         </header>

@@ -4,11 +4,23 @@ import { Provider } from 'react-redux'
 import store from '@/store'
 import Header from '@/components/header'
 
-export default function ReduxProvider({ children }) {
+/**
+ * Component này nằm trong CommonLayout.jsx
+ */
+
+export default function ReduxProvider({ children, getSession }) {
     return (
         <Provider store={store}>
-            <Header />
+            <Header getSession={getSession}/>
             {children}
         </Provider>
     )
 }
+// export default function ReduxProvider({ children }) {
+//     return (
+//         <Provider store={store}>
+//             <Header/>
+//             {children}
+//         </Provider>
+//     )
+// }

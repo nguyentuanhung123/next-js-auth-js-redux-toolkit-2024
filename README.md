@@ -465,4 +465,204 @@ const handleAuthSignIn = async() => {
 
 -> Nếu nó đòi Authorize thì thành công
 
+# Thêm loading mỗi khi chuyển sang trang khác mà ta chưa vào trước đây, những trang đã từng vào sẽ không còn hiện ra
+- Thêm file loading.jsx (Không cần phải Suspense như video trước và nó sẽ tự hiện)
+
+```jsx
+import { Skeleton } from "@/components/ui/skeleton"
+
+const Loading = () => {
+    return (
+        <Skeleton className="w-full min-h-screen bg-black rounded-full" />
+    )
+}
+
+export default Loading
+```
+
 # Vấn đề : Sau khi Authorize thành công thì hiện button Logout
+
+- B1: Lấy ra Section (thông tin của user và thời gian hết hạn của section đó trong Home.jsx sau khi người dùng đăng nhập thành công bằng github như trên) và đặt đoạn code lên đầu
+
+```jsx
+import { auth } from "@/auth";
+
+const getSession = await auth();
+console.log(getSession);
+```
+
+- B2: Thêm logic nếu người dùng chưa đăng nhập thì phải chuyển sang trang cảnh báo chưa đăng nhập
+
+```jsx
+if(!getSession?.user) redirect("/unauth-page");
+```
+
+- B3: Copy đoạn code trên vào các trang như productDetails, Cart, Home, ...
+
+- B4: Copy đoạn code đó vào trong CommonLayout
+
+- Ban đầu
+
+```jsx
+function CommonLayout({ children }) {
+    return (
+        <ReduxProvider>
+            {children}
+        </ReduxProvider>
+    )
+}
+
+export default CommonLayout;
+```
+
+- Sau khi sửa
+
+```jsx
+async function CommonLayout({ children }) {
+
+    const getSession = await auth();
+
+    return (
+        <ReduxProvider getSession={getSession}>
+            {children}
+        </ReduxProvider>
+    )
+}
+
+export default CommonLayout;
+```
+
+- B5: Sửa lại Redux Provider
+
+- Ban đầu
+
+```jsx
+"use client"
+
+import { Provider } from 'react-redux'
+import store from '@/store'
+import Header from '@/components/header'
+
+export default function ReduxProvider({ children }) {
+    return (
+        <Provider store={store}>
+            <Header />
+            {children}
+        </Provider>
+    )
+}
+```
+
+- Sau khi sửa
+
+```jsx
+"use client"
+
+import { Provider } from 'react-redux'
+import store from '@/store'
+import Header from '@/components/header'
+
+export default function ReduxProvider({ children, getSession }) {
+    return (
+        <Provider store={store}>
+            <Header getSession={getSession}/>
+            {children}
+        </Provider>
+    )
+}
+```
+- B6: Sửa lại Header.jsx
+
+- Ban đầu
+
+```jsx
+const Header = () => {
+
+    const handleAuthSignIn = async() => {
+        await loginAction()
+    }
+
+    ...
+}
+```
+
+= Sau khi sửa
+
+```jsx
+const Header = ({getSession}) => {
+
+    console.log("setSession in header", getSession);
+
+    const handleAuthSignIn = async() => {
+        await loginAction()
+    }
+}
+```
+
+- B7: Sau khi có sesion thì đổi button Login sang Logout
+
+- Ban đầu
+
+```jsx
+<form action={handleAuthSignIn}>
+    <Button type="submit">Login</Button>
+</form>
+```
+
+- Sau khi sửa
+
+```jsx
+const handleOauthSignOut = async() => {
+    await logoutAction()
+}
+
+<form action={getSession?.user ? handleOauthSignOut : handleOauthSignIn}>
+    <Button type="submit">
+        {
+            getSession?.user ? "Logout" : "Login"
+        }
+    </Button>
+</form>
+```
+
+- B8: Trong trường hợp người dùng đã đăng nhập bằng tài khoản github thì khi vào unauth-page sễ được chuyển hướng sang Home pape
+
+```jsx
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+
+const UnauthPage = async () => {
+
+    const getSession = await auth();
+    if(getSession?.user) redirect("/");
+
+    return (
+        <div className='p-20'>
+            <h2 className='text-6xl font-extrabold'>
+                You are not logged in. Please login
+            </h2>
+        </div>
+    )
+}
+
+export default UnauthPage
+```
+
+### Ta muốn đảm bảo chắc chắn khi chuyển trang sẽ có loading thì phải bổ sung loading bằng Suspense trong CommonLayout
+
+```jsx
+async function CommonLayout({ children }) {
+
+    const getSession = await auth();
+
+    return (
+        <ReduxProvider getSession={getSession}>
+            <Suspense fallback={<Loading />}>
+                {children}
+            </Suspense>
+        </ReduxProvider>
+    )
+}
+
+export default CommonLayout;
+```
